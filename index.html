@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Thanksgiving!</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    font-family: Georgia, "Times New Roman", serif;
+    background: radial-gradient(circle at top, #fbe3c0 0%, #f2b872 45%, #c9672a 100%);
+    display: flex; align-items: center; justify-content: center;
+    overflow-x: hidden; color: #4a2410; padding: 20px;
+  }
+  .leaf {
+    position: fixed; top: -60px; font-size: 28px; pointer-events: none;
+    animation: fall linear forwards; z-index: 0;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg) translateX(var(--drift)); }
+  }
+  .card {
+    position: relative; z-index: 1;
+    background: #fffaf1; border: 6px double #b4561d; border-radius: 22px;
+    max-width: 620px; width: 100%; padding: 40px 34px; text-align: center;
+    box-shadow: 0 18px 45px rgba(90, 35, 5, 0.35);
+  }
+  .turkey { font-size: 64px; display: inline-block; animation: wobble 2.5s ease-in-out infinite; }
+  @keyframes wobble { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+  h1 { font-size: 2.6rem; color: #a3420f; margin: 8px 0 6px; letter-spacing: 1px; }
+  .sub { font-size: 1.1rem; margin-bottom: 26px; color: #7a3d17; }
+  label { display: block; font-size: 1.15rem; margin-bottom: 10px; font-weight: bold; }
+  input {
+    width: 100%; max-width: 360px; padding: 14px 16px; font-size: 1.2rem;
+    border: 3px solid #d98a3d; border-radius: 12px; text-align: center;
+    font-family: inherit; background: #fff; color: #4a2410; outline: none;
+  }
+  input:focus { border-color: #a3420f; box-shadow: 0 0 0 4px rgba(217,138,61,0.25); }
+  button {
+    margin-top: 18px; padding: 14px 30px; font-size: 1.15rem; font-family: inherit;
+    font-weight: bold; color: #fff; background: #b4561d; border: none; border-radius: 40px;
+    cursor: pointer; box-shadow: 0 5px 0 #7a3410; transition: transform .1s, box-shadow .1s;
+  }
+  button:hover { background: #c4652a; }
+  button:active { transform: translateY(4px); box-shadow: 0 1px 0 #7a3410; }
+  .hidden { display: none; }
+  .fade { animation: fadeIn .9s ease forwards; opacity: 0; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .hello { font-size: 1.9rem; color: #a3420f; margin-bottom: 18px; }
+  .affirm { font-size: 1.3rem; line-height: 1.6; margin-bottom: 22px; }
+  .verse {
+    background: #fdf0dc; border-left: 6px solid #d98a3d; border-radius: 10px;
+    padding: 18px 20px; text-align: left; font-style: italic; line-height: 1.6;
+    font-size: 1.08rem; margin-bottom: 26px;
+  }
+  .ref { display: block; margin-top: 10px; font-style: normal; font-weight: bold; text-align: right; color: #a3420f; }
+  .closing { font-size: 1.25rem; line-height: 1.7; margin-top: 8px; }
+  .closing strong { color: #a3420f; }
+  .sig { font-size: 1.5rem; margin-top: 10px; font-style: italic; color: #7a3d17; }
+  .btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-alt { background: #8a6a3a; box-shadow: 0 5px 0 #5a4220; }
+  .btn-alt:hover { background: #9c7a48; }
+  .err { color: #b3261e; margin-top: 10px; min-height: 1.2em; font-size: 1rem; }
+  .notice { margin-top: 26px; font-size: .72rem; color: #9a7458; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Screen 1: name entry -->
+  <div id="start">
+    <div class="turkey">🦃</div>
+    <h1>Happy Thanksgiving!</h1>
+    <p class="sub">I have a special message just for you. 🍂</p>
+    <label for="nameBox">Type your name below:</label>
+    <input id="nameBox" type="text" placeholder="Your name" maxlength="30" autocomplete="off">
+    <div class="err" id="err"></div>
+    <button id="goBtn">Get My Message 🥧</button>
+  </div>
+
+  <!-- Screen 2: message -->
+  <div id="message" class="hidden">
+    <div class="turkey">🦃</div>
+    <div class="hello fade" id="hello"></div>
+    <p class="affirm fade" id="affirm" style="animation-delay:.4s"></p>
+    <div class="verse fade" id="verse" style="animation-delay:.9s"></div>
+    <div class="fade" style="animation-delay:1.5s">
+      <p class="closing">Praying you have a great break.<br><strong>We are blessed!</strong> 🙏</p>
+      <p class="sig">— Mr. Krutz</p>
+      <div class="btns">
+        <button id="againBtn">Another Message 🍁</button>
+        <button id="restartBtn" class="btn-alt">Start Over</button>
+      </div>
+    </div>
+  </div>
+  <p class="notice">Scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</p>
+</div>
+
+<script>
+  // Each message pairs an encouraging sentence with a matching verse (ESV).
+  const messages = [
+    { a: "{name}, you are one of a kind. God made you on purpose and for a purpose.",
+      v: "I praise you, for I am fearfully and wonderfully made. Wonderful are your works; my soul knows it very well.", r: "Psalm 139:14" },
+    { a: "{name}, God has big plans for your life, and your future is bright!",
+      v: "For I know the plans I have for you, declares the LORD, plans for welfare and not for evil, to give you a future and a hope.", r: "Jeremiah 29:11" },
+    { a: "{name}, you are stronger than you think. You've got what it takes!",
+      v: "I can do all things through him who strengthens me.", r: "Philippians 4:13" },
+    { a: "{name}, your thankful heart makes the people around you better.",
+      v: "Give thanks in all circumstances; for this is the will of God in Christ Jesus for you.", r: "1 Thessalonians 5:18" },
+    { a: "{name}, I'm thankful you're in my class. You make it a better place to be.",
+      v: "Oh give thanks to the LORD, for he is good, for his steadfast love endures forever!", r: "Psalm 107:1" },
+    { a: "{name}, you are brave, and you never face anything alone.",
+      v: "Have I not commanded you? Be strong and courageous. Do not be frightened, and do not be dismayed, for the LORD your God is with you wherever you go.", r: "Joshua 1:9" },
+    { a: "{name}, you were created to do great things. Keep using the gifts God gave you!",
+      v: "For we are his workmanship, created in Christ Jesus for good works, which God prepared beforehand, that we should walk in them.", r: "Ephesians 2:10" },
+    { a: "{name}, you are a leader. People are watching your example, and it's a good one.",
+      v: "Let no one despise you for your youth, but set the believers an example in speech, in conduct, in love, in faith, in purity.", r: "1 Timothy 4:12" },
+    { a: "{name}, your kindness shines. Keep letting your light show!",
+      v: "You are the light of the world. A city set on a hill cannot be hidden.", r: "Matthew 5:14" },
+    { a: "{name}, God doesn't just love you. He rejoices over you!",
+      v: "The LORD your God is in your midst, a mighty one who will save; he will rejoice over you with gladness; he will quiet you by his love; he will exult over you with loud singing.", r: "Zephaniah 3:17" },
+    { a: "{name}, you bring joy to the people around you. Enjoy every bit of this break!",
+      v: "Enter his gates with thanksgiving, and his courts with praise! Give thanks to him; bless his name!", r: "Psalm 100:4" },
+    { a: "{name}, you are smart and capable. Trust God with the things you can't figure out yet.",
+      v: "Trust in the LORD with all your heart, and do not lean on your own understanding.", r: "Proverbs 3:5" },
+    { a: "{name}, you work hard, and it shows. I'm proud of the effort you put in.",
+      v: "Whatever you do, work heartily, as for the Lord and not for men.", r: "Colossians 3:23" },
+    { a: "{name}, you are a gift to your family, your friends, and your school.",
+      v: "Every good gift and every perfect gift is from above, coming down from the Father of lights, with whom there is no variation or shadow due to change.", r: "James 1:17" },
+    { a: "{name}, rest up this break. God will give you new strength for what's next!",
+      v: "But they who wait for the LORD shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.", r: "Isaiah 40:31" },
+    { a: "{name}, you are blessed, and you are a blessing to others.",
+      v: "The LORD bless you and keep you; the LORD make his face to shine upon you and be gracious to you.", r: "Numbers 6:24–25" }
+  ];
+
+  const $ = id => document.getElementById(id);
+  let currentName = "";
+  let lastIndex = -1;
+
+  function clean(text) {
+    const d = document.createElement("div");
+    d.textContent = text;
+    return d.innerHTML;
+  }
+
+  function pickMessage() {
+    let i;
+    do { i = Math.floor(Math.random() * messages.length); } while (i === lastIndex && messages.length > 1);
+    lastIndex = i;
+    return messages[i];
+  }
+
+  function restartAnimations() {
+    document.querySelectorAll("#message .fade").forEach(el => {
+      el.style.animation = "none";
+      el.offsetHeight; // force reflow
+      el.style.animation = "";
+    });
+  }
+
+  function showMessage() {
+    const m = pickMessage();
+    const safeName = clean(currentName);
+    $("hello").innerHTML = "Happy Thanksgiving, " + safeName + "! 🍂";
+    $("affirm").innerHTML = m.a.replace("{name}", "<strong>" + safeName + "</strong>");
+    $("verse").innerHTML = "“" + m.v + "”<span class='ref'>" + m.r + " (ESV)</span>";
+    restartAnimations();
+    for (let k = 0; k < 18; k++) setTimeout(dropLeaf, k * 120);
+  }
+
+  function start() {
+    const name = $("nameBox").value.trim();
+    if (!name) { $("err").textContent = "Don't forget to type your name! 😊"; $("nameBox").focus(); return; }
+    $("err").textContent = "";
+    currentName = name.charAt(0).toUpperCase() + name.slice(1);
+    $("start").classList.add("hidden");
+    $("message").classList.remove("hidden");
+    showMessage();
+  }
+
+  $("goBtn").addEventListener("click", start);
+  $("nameBox").addEventListener("keydown", e => { if (e.key === "Enter") start(); });
+  $("againBtn").addEventListener("click", showMessage);
+  $("restartBtn").addEventListener("click", () => {
+    $("message").classList.add("hidden");
+    $("start").classList.remove("hidden");
+    $("nameBox").value = "";
+    $("nameBox").focus();
+  });
+
+  // Falling leaves
+  const leafIcons = ["🍂", "🍁", "🍃", "🌾"];
+  function dropLeaf() {
+    const leaf = document.createElement("div");
+    leaf.className = "leaf";
+    leaf.textContent = leafIcons[Math.floor(Math.random() * leafIcons.length)];
+    leaf.style.left = Math.random() * 100 + "vw";
+    leaf.style.fontSize = (20 + Math.random() * 22) + "px";
+    leaf.style.setProperty("--drift", (Math.random() * 200 - 100) + "px");
+    leaf.style.animationDuration = (5 + Math.random() * 5) + "s";
+    document.body.appendChild(leaf);
+    setTimeout(() => leaf.remove(), 11000);
+  }
+  setInterval(dropLeaf, 900);
+  $("nameBox").focus();
+</script>
+</body>
+</html>
